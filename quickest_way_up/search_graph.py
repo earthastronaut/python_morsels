@@ -1,5 +1,6 @@
 
 # %%
+from collections import deque, namedtuple
 import logging 
 from typing import Dict, List, Hashable, Iterable, Callable, Union
 
@@ -29,29 +30,31 @@ def search_graph(
         None or List[Hashable]: Returns None or the current path when
             `callable(path) == True`.
     """
-    stack = [(start, [start])]
-    pop_from = -1 if depth_first else 0
+    stack = deque()
+    stack.append((start, [start], {start}))
+    pop_node = stack.pop if depth_first else stack.popleft
 
     while len(stack):
+        node, path, path_lookup = pop_node()
 
-        node, path = stack.pop(pop_from)
-
-        logger.debug(f'Path: {path}')
+        # logger.debug(f'Path: {path}')
         if callback is not None:
-            goal_achieved = callback(path)
-            if goal_achieved:
+            if callback(path):
                 return path
 
-        children = get_children(node) or []
+        children = get_children(node) or tuple()
         for child in children:
-            if child in path:
+            if child in path_lookup:
                 continue
-            stack.append((child, path + [child]))
+            stack.append((child, path + [child], path_lookup.union({child})))
+
 
 
 # %%
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.DEBUG)
+
     graph={
         'A': ['B', 'C'],
         'B': ['A', 'D', 'E',],
@@ -62,5 +65,41 @@ if __name__ == "__main__":
     }
 
     result = search_graph('B', graph.get, depth_first=True)
+    
+    graph={
+        0: {
+            1: 4,
+            7: 8,
+        },
+        1: {
+            2: 8,
+            7: 11,
+        },
+        2: {
+            3: 7,
+            5: 4,
+            8: 2,
+        },
+        3: {
+            4: 9,
+            5: 14,
+        },
+        4: {
+            5: 10,
+        },
+        5: {
+            6: 2,
+        },
+        6: {
+            8: 6,
+            7: 1,
+        },
+        7: {
+            8: 7,
+        },
+        8: {}
+    }
+    # weighted graph. Second dictionary gives the weight values.
+
 
 # %%
