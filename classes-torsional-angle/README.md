@@ -37,3 +37,11 @@ Sample Input
 Sample Output
 
 8.19
+
+
+
+{has_any(s, "isalnum")}
+{has_any(s, "isalpha")}
+{has_any(s, "isdigit")}
+{has_any(s, "islower")}
+{has_any(s, "isupper")}
